@@ -1,0 +1,35 @@
+{
+  "name": "sandbox-lowpoly",
+  "version": "1.0.0",
+  "description": "Sandbox multijugador low-poly estilo GMod (Three.js + Rapier + ws)",
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c magenta,cyan \"tsx watch src/server/index.ts --dev\" \"vite\"",
+    "build": "tsc --noEmit && vite build && esbuild src/server/index.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outfile=dist/server/index.js",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test --test-concurrency=1 tests/sync.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.21.0",
+    "three": "^0.186.1",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/three": "^0.186.0",
+    "@types/ws": "^8.18.2",
+    "concurrently": "^10.0.6",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

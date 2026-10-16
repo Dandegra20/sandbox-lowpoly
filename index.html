@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sandbox Low-Poly</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><polygon points='8,1 15,13 1,13' fill='%23e67e22'/></svg>" />
+  </head>
+  <body>
+    <div id="game"></div>
+
+    <!-- Menú de entrada -->
+    <div id="menu" class="overlay">
+      <!-- Fondo low-poly hecho con CSS (sin imágenes) -->
+      <div class="menu-bg" aria-hidden="true">
+        <i class="sun"></i><i class="m m1"></i><i class="m m2"></i><i class="m m3"></i><i class="m m4"></i>
+        <i class="cube c1"></i><i class="cube c2"></i><i class="cube c3"></i>
+      </div>
+      <div class="panel menu-panel">
+        <h1>Sandbox <span>Low-Poly</span></h1>
+        <p class="tagline">Construye, rompe cosas y haz el tonto con hasta 6 amigos.</p>
+        <label>Tu nombre
+          <input id="name" maxlength="16" placeholder="Jugador" autocomplete="off" />
+        </label>
+        <button id="open-editor">Personalizar personaje</button>
+        <div class="create-opts">
+          <label>Mapa <select id="map-select"></select></label>
+          <label>Modo <select id="mode-select"></select></label>
+          <label id="kill-limit-row">Límite de bajas <select id="kill-limit"></select></label>
+        </div>
+        <p id="create-desc" class="desc"></p>
+        <button id="create" class="primary">Crear sala</button>
+        <div class="sep">o únete con un código</div>
+        <div class="row">
+          <input id="code" maxlength="4" placeholder="ABCD" autocomplete="off" />
+          <button id="join">Unirse</button>
+        </div>
+        <p id="menu-error" class="error"></p>
+        <div class="menu-foot">
+          <button id="open-settings">⚙ Ajustes</button>
+          <button id="open-help">Controles</button>
+        </div>
+        <div id="share-info" class="share-info" hidden></div>
+      </div>
+    </div>
+
+    <!-- Controles (desde el menú principal) -->
+    <div id="help" class="overlay" hidden>
+      <div class="panel wide">
+        <b class="panel-title">Controles</b>
+        <div class="keys">
+          <kbd>WASD</kbd><span>Moverse (Shift: esprintar)</span>
+          <kbd>Ratón</kbd><span>Mirar</span>
+          <kbd>Espacio</kbd><span>Saltar</span>
+          <kbd>Clic izq.</kbd><span>Disparar · con la pistola de gravedad, mantener para agarrar</span>
+          <kbd>Clic der.</kbd><span>Pistola de gravedad: empujar o lanzar</span>
+          <kbd>1–6 / rueda</kbd><span>Cambiar de arma (6: tool gun)</span>
+          <kbd>Q</kbd><span>Menú de objetos y herramientas</span>
+          <kbd>Z</kbd><span>Deshacer el último objeto</span>
+          <kbd>E</kbd><span>Subir o bajar de un vehículo</span>
+          <kbd>R</kbd><span>Acción extra de la herramienta</span>
+          <kbd>V</kbd><span>Cámara en 1ª / 3ª persona</span>
+          <kbd>T</kbd><span>Chat</span>
+          <kbd>Tab</kbd><span>Marcador</span>
+          <kbd>Esc</kbd><span>Pausa (jugadores, ajustes, salir)</span>
+        </div>
+        <button id="help-close" class="primary">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- Ajustes (desde el menú principal y desde la pausa) -->
+    <div id="settings" class="overlay" hidden>
+      <div class="panel settings">
+        <div class="editor-head"><b>Ajustes</b><span class="help">Se guardan en este navegador y se aplican al momento.</span></div>
+        <div class="settings-body">
+          <section>
+            <div class="ed-heading">Controles</div>
+            <label class="set-row">Sensibilidad del ratón <input type="range" id="set-sensitivity" min="0.2" max="3" step="0.05" /><output id="out-sensitivity"></output></label>
+            <label class="set-row">Campo de visión <input type="range" id="set-fov" min="60" max="100" step="1" /><output id="out-fov"></output></label>
+            <label class="set-check"><input type="checkbox" id="set-invert" /> Invertir el eje vertical del ratón</label>
+          </section>
+          <section>
+            <div class="ed-heading">Sonido</div>
+            <label class="set-row">Volumen general <input type="range" id="set-master" min="0" max="1" step="0.05" /><output id="out-master"></output></label>
+            <label class="set-row">Efectos <input type="range" id="set-effects" min="0" max="1" step="0.05" /><output id="out-effects"></output></label>
+            <label class="set-row">Interfaz y avisos <input type="range" id="set-ui" min="0" max="1" step="0.05" /><output id="out-ui"></output></label>
+            <button id="set-test-sound" class="small">Probar sonido</button>
+          </section>
+          <section>
+            <div class="ed-heading">Gráficos</div>
+            <label class="set-row">Calidad
+              <select id="set-quality">
+                <option value="auto">Automática (según los fps)</option>
+                <option value="high">Alta</option>
+                <option value="medium">Media</option>
+                <option value="low">Baja (equipos lentos)</option>
+              </select>
+            </label>
+            <p id="quality-desc" class="desc"></p>
+            <label class="set-check"><input type="checkbox" id="set-stats" /> Mostrar fps, ping y uso de red</label>
+          </section>
+        </div>
+        <div class="editor-foot">
+          <button id="settings-reset">Restablecer</button>
+          <span class="spacer"></span>
+          <button id="settings-close" class="primary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD en partida -->
+    <div id="hud" hidden>
+      <div class="hud-top">
+        <div>Sala <b id="room-code">----</b> <button id="copy-link" title="Copiar enlace de invitación">Copiar enlace</button></div>
+        <div id="mode-info"></div>
+        <div id="player-count"></div>
+        <div id="stats"></div>
+      </div>
+      <div id="damage-flash"></div>
+      <div id="crosshair"></div>
+      <div id="hitmarker"></div>
+      <div id="killfeed"></div>
+
+      <div id="health"><span class="icon">✚</span><span id="health-value">100</span>
+        <div class="bar"><div id="health-bar"></div></div>
+      </div>
+      <div id="weapon-bar"></div>
+
+      <!-- Resultados de la ronda (Deathmatch) -->
+      <div id="results" hidden>
+        <div class="panel results">
+          <b id="results-title"></b>
+          <div id="results-list" class="player-list"></div>
+          <span id="results-timer"></span>
+        </div>
+      </div>
+
+      <div id="death-screen" hidden>
+        <b id="death-text"></b>
+        <span id="death-timer"></span>
+      </div>
+
+      <div id="chat">
+        <div id="chat-log"></div>
+        <input id="chat-input" maxlength="200" placeholder="Escribe y pulsa Enter · Esc para cancelar" autocomplete="off" hidden />
+      </div>
+
+      <!-- Lista de jugadores mientras se mantiene Tab -->
+      <div id="tab-list" class="player-list" hidden></div>
+
+      <div id="banner" hidden></div>
+      <div id="hint" hidden></div>
+      <div id="tool-msg" hidden></div>
+      <div id="tool-panel" hidden>
+        <div class="tool-title">Herramienta: <b id="tool-name"></b> <span id="tool-color"></span></div>
+        <div id="tool-help"></div>
+        <div class="tool-foot">Q para cambiar de herramienta</div>
+      </div>
+
+      <!-- Menú de spawn (Q) -->
+      <div id="spawn-menu" class="overlay" hidden>
+        <div class="panel spawn">
+          <div class="spawn-head">
+            <b>Objetos</b>
+            <span id="spawn-count"></span>
+            <span class="spacer"></span>
+            <button id="spawn-undo">Deshacer (Z)</button>
+            <button id="spawn-clear" class="danger">Borrar los míos</button>
+            <button id="spawn-close">Cerrar (Q)</button>
+          </div>
+          <div class="spawn-body">
+            <div id="spawn-tabs"></div>
+            <div id="spawn-grid"></div>
+          </div>
+          <p class="help" id="spawn-help">Clic: crear donde apuntas · Mayús+clic: crear varios sin cerrar · Z: deshacer · E: subir/bajar de un vehículo</p>
+        </div>
+      </div>
+
+      <!-- Pausa: aparece al soltar el ratón -->
+      <div id="pause" class="overlay">
+        <div class="panel wide">
+          <button id="resume" class="primary">Volver al juego</button>
+          <p class="help">
+            <b>WASD</b> mover · <b>Shift</b> sprint · <b>Espacio</b> saltar · <b>V</b> cámara 1ª/3ª persona ·
+            <b>Clic izq.</b> disparar · <b>1–5</b> / <b>rueda</b> cambiar arma ·
+            <b>Pistola de gravedad:</b> mantener clic izq. arrastra objetos, rueda acerca/aleja, clic der. empuja/lanza ·
+            <b>Q</b> menú de objetos y herramientas · <b>6</b> tool gun (<b>R</b> acción extra) · <b>Z</b> deshacer · <b>E</b> subir/bajar de un vehículo ·
+            <b>T</b> chat · <b>Tab</b> marcador · <b>Esc</b> pausa
+          </p>
+          <div id="pause-list" class="player-list"></div>
+          <div class="row">
+            <button id="pause-editor">Personaje</button>
+            <button id="pause-settings">⚙ Ajustes</button>
+            <button id="leave" class="danger">Salir de la sala</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor de personaje (desde el menú principal y desde la pausa) -->
+    <div id="editor" class="overlay" hidden>
+      <div class="panel editor">
+        <div class="editor-head"><b>Tu personaje</b><span class="help">Se guarda en este navegador y lo ven los demás jugadores.</span></div>
+        <div class="editor-body">
+          <div class="editor-preview">
+            <canvas id="editor-canvas"></canvas>
+            <span class="help">Arrastra para girarlo</span>
+          </div>
+          <div id="editor-options"></div>
+        </div>
+        <div class="editor-foot">
+          <button id="editor-random">Aleatorio</button>
+          <button id="editor-reset">Deshacer cambios</button>
+          <span class="spacer"></span>
+          <button id="editor-cancel">Cancelar</button>
+          <button id="editor-save" class="primary">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/client/main.ts"></script>
+  </body>
+</html>
